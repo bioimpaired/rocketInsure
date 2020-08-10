@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Input, Button } from "antd";
 
 const BASE_URL = "https://fed-challenge-api.sure.now.sh";
@@ -24,26 +24,44 @@ const useFetch = (endpoint) => {
       });
   };
 
-  return [formState, formPage, fetchAt];
+  return [formState, formPage, fetchAt, setFormState];
 };
 
 function App() {
-  const [formState, formPage, fetchAt] = useFetch(BASE_URL);
-  const [variableSelections, setVariableSelections] = useState({});
-
+  const [formState, formPage, fetchAt, setFormState] = useFetch(BASE_URL);
+  function putRequest(quoteId, body) {
+    return fetch(
+      `https://fed-challenge-api.sure.now.sh/api/v1/quotes/${quoteId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }
+    ).then((response) => response.json());
+  }
   function handleChange(event) {
     const {
       target: { name, value },
     } = event;
-    setVariableSelections((state) => ({ ...state, [name]: value }));
+
     const quoteId = formState.quote.quoteId;
     const putBody = {
-      variableSelections,
-      quoteId: quoteId,
-      rating_address: formState.quote.rating_address,
-      policy_holder: formState.quote.policy_holder,
+      quote: {
+        quoteId: quoteId,
+        rating_address: formState.quote.rating_address,
+        policy_holder: formState.quote.policy_holder,
+        variable_selections: {
+          ...formState.quote.variable_selections,
+          [name]: value,
+        },
+      },
     };
-    fetchAt(`api/v1/quotes/${quoteId}`, "PUT", putBody);
+
+    console.log("put boty", putBody);
+    putRequest(quoteId, putBody)
+      .then((json) => {
+        setFormState(json);
+      })
+      .catch((error) => error);
   }
   const onFinish = (state) => {
     const orderedFormState = {
@@ -58,7 +76,6 @@ function App() {
       },
     };
     fetchAt("/api/v1/quotes", "POST", orderedFormState);
-    setVariableSelections(formState.quote.variable_selections);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -164,25 +181,52 @@ function App() {
         </Form>
       ) : (
         <>
-          <div>{formState.quote.variable_options.asteroid_collision.title}</div>
-          <div>
-            {formState.quote.variable_options.asteroid_collision.description}
-          </div>
-          <select onChange={handleChange} name="asteroid_collision">
-            {formState.quote.variable_options.asteroid_collision.values.map(
-              (val) => (
-                <option value={val}>{val}</option>
-              )
-            )}
-          </select>
+          {formState.quote ? (
+            <div>
+              <div>name</div>
+              <div>
+                {formState.quote.policy_holder.first_name +
+                  " " +
+                  formState.quote.policy_holder.last_name}
+              </div>
+              <div>
+                {formState.quote.variable_options.asteroid_collision.title}
+              </div>
+              <div>
+                {
+                  formState.quote.variable_options.asteroid_collision
+                    .description
+                }
+              </div>
+              <select onChange={handleChange} name="asteroid_collision">
+                {formState.quote.variable_options.asteroid_collision.values.map(
+                  (val, idx) => (
+                    <option key={idx} value={val}>
+                      {val}
+                    </option>
+                  )
+                )}
+              </select>
 
-          <div>{formState.quote.variable_options.deductible.title}</div>
-          <div>{formState.quote.variable_options.deductible.description}</div>
-          <select onChange={handleChange} name="deductible">
-            {formState.quote.variable_options.deductible.values.map((val) => (
-              <option value={val}>{val}</option>
-            ))}
-          </select>
+              <div>{formState.quote.variable_options.deductible.title}</div>
+              <div>
+                {formState.quote.variable_options.deductible.description}
+              </div>
+              <select onChange={handleChange} name="deductible">
+                {formState.quote.variable_options.deductible.values.map(
+                  (val, idx) => (
+                    <option key={idx} value={val}>
+                      {val}
+                    </option>
+                  )
+                )}
+              </select>
+              <div>premium</div>
+              <div>{formState.quote.premium}</div>
+            </div>
+          ) : (
+            "loading"
+          )}
         </>
       )}
     </div>
