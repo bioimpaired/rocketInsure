@@ -91,7 +91,7 @@ const FirstFormPage = () => {
           rules={[
             {
               required: true,
-              message: "Please input your postal!",
+              message: "Please input your postal! must be a valid zipcode",
             },
           ]}
         >

@@ -5,6 +5,7 @@ import { QuoteContext } from "./QuoteContextProvider";
 const SecondPage = () => {
   const { Option } = Select;
   const { state, handleChange } = useContext(QuoteContext);
+  //   need to safe destructure for error problem
   const {
     quote: { policy_holder, variable_options, variable_selections, premium },
   } = state;

@@ -11,6 +11,10 @@ const App = () => {
   const { Header, Footer, Content } = Layout;
   const { state } = useContext(QuoteContext);
 
+  if (state.error) {
+    return <div>error occured please refresh page</div>;
+  }
+
   if (state.loading) {
     return <Spin />;
   }
