@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useReducer } from "react";
-import { Form, Input, Button } from "antd";
+import React, { useState, useEffect, useReducer, useRef } from "react";
+import { Form, Input, Button, Select } from "antd";
+import "antd/dist/antd.css";
 
 const BASE_URL = "https://fed-challenge-api.sure.now.sh";
 
@@ -31,8 +32,6 @@ const initState = {
 const useFetch = (endpoint) => {
   const [state, dispatch] = useReducer(quote, initState);
 
-  // const [formState, setFormState] = useState({});
-  // const [formPage, setFormPage] = useState(true);
   const setQuote = (quote) =>
     dispatch({
       type: "SET_QUOTE",
@@ -48,29 +47,17 @@ const useFetch = (endpoint) => {
       type: "NEXT_PAGE",
       payload: { onFormPage: false },
     });
-  // const setSelection = () =>
-  //   dispatch({
-  //     type: "NEXT_PAGE",
-  //     payload: { onFormPage: false },
-  //   });
 
   const fetchAt = (api, method, body) => {
     setLoading(true);
     fetch(endpoint + api, {
       method: method,
-      // headers: {
-      //   "Content-Type": "application/json",
-      // },
       body: JSON.stringify(body),
     })
       .then((response) => response.json())
       .then((data) => {
-        // if (method == "POST") {
         setQuote(data);
         nextPage();
-        // }
-        // if (method == "PUT") {
-        // }
         setLoading(false);
       })
       .catch((error) => {
@@ -79,34 +66,22 @@ const useFetch = (endpoint) => {
       });
   };
 
-  function putRequest(quoteId, body) {
-    // setLoading(true);
-
-    fetch(`https://fed-challenge-api.sure.now.sh/api/v1/quotes/${quoteId}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        console.log("josn", json);
-        setQuote(json);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-      });
-  }
-
-  return [state, dispatch, fetchAt, putRequest];
+  return [state, fetchAt];
 };
 
 function App() {
-  const [state, dispatch, fetchAt, putRequest] = useFetch(BASE_URL);
+  const { Option } = Select;
+  const [state, fetchAt] = useFetch(BASE_URL);
 
-  function handleChange(event) {
-    const {
-      target: { name, value },
-    } = event;
+  const secFormRef = useRef(null);
+
+  function handleChange(event, sec, third) {
+    // const {
+    //   target: { name, value },
+    // } = event;
+    const deductible = secFormRef.current.getFieldValue("deductible");
+    // deductibleAmount.current.getFieldValue("deductible");
+    console.log("eve", event, sec, deductible);
     const putBody = {
       quote: {
         quoteId: state.quote.quoteId,
@@ -114,12 +89,11 @@ function App() {
         policy_holder: state.quote.policy_holder,
         variable_selections: {
           ...state.quote.variable_selections,
-          [name]: value,
+          deductible: parseInt(deductible),
         },
       },
     };
-    // putRequest(`/api/v1/quotes/${state.quote.quoteId}`, "PUT", putBody);
-    putRequest(state.quote.quoteId, putBody);
+    fetchAt(`/api/v1/quotes/${state.quote.quoteId}`, "PUT", putBody);
   }
 
   const onFinish = (state) => {
@@ -140,9 +114,11 @@ function App() {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+
   if (state.loading) {
     return <div>loading..</div>;
   }
+
   if (!state.onFormPage) {
     return (
       <div>
@@ -154,25 +130,41 @@ function App() {
         </div>
         <div>{state.quote.variable_options.asteroid_collision.title}</div>
         <div>{state.quote.variable_options.asteroid_collision.description}</div>
-        <select onChange={handleChange} name="asteroid_collision">
-          {state.quote.variable_options.asteroid_collision.values.map(
-            (val, idx) => (
-              <option key={idx} value={val}>
-                {val}
-              </option>
-            )
-          )}
-        </select>
+        <Form ref={secFormRef}>
+          <Form.Item label="First Name" name="first_name">
+            <Select onChange={handleChange} name="asteroid_collision">
+              {state.quote.variable_options.asteroid_collision.values.map(
+                (val, idx) => (
+                  <Option key={idx} value={val}>
+                    {val}
+                  </Option>
+                )
+              )}
+            </Select>
+          </Form.Item>
 
-        <div>{state.quote.variable_options.deductible.title}</div>
-        <div>{state.quote.variable_options.deductible.description}</div>
-        <select onChange={handleChange} name="deductible">
-          {state.quote.variable_options.deductible.values.map((val, idx) => (
-            <option key={idx} value={val}>
-              {val}
-            </option>
-          ))}
-        </select>
+          <div>{state.quote.variable_options.deductible.title}</div>
+          <div>{state.quote.variable_options.deductible.description}</div>
+          <Form.Item label="deductible" name="deductible">
+            <Select
+              onChange={handleChange}
+              name="deductible"
+              placeholder="sljfd"
+            >
+              {state.quote.variable_options.deductible.values.map(
+                (val, idx) => {
+                  // const valObj = JSON.stringify({name: "de"})
+                  return (
+                    <Option key={idx} value={val}>
+                      {val}
+                    </Option>
+                  );
+                }
+              )}
+            </Select>
+          </Form.Item>
+        </Form>
+
         <div>premium</div>
         <div>{state.quote.premium}</div>
       </div>
@@ -274,14 +266,6 @@ function App() {
           </Button>
         </Form.Item>
       </Form>
-      {/* <>
-          {formState.quote ? (
-            
-          ) : (
-            "loading"
-          )}
-        </>
-      )} */}
     </div>
   );
 }
