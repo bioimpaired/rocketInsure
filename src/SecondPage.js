@@ -10,7 +10,13 @@ const SecondPage = () => {
     quote: { policy_holder, variable_options, variable_selections, premium },
   } = state;
   return (
-    <Form className="formStyles">
+    <Form
+      className="formStyles"
+      initialValues={{
+        asteroid_collision: variable_selections.asteroid_collision,
+        deductible: variable_selections.deductible,
+      }}
+    >
       <Descriptions title="Adjust selection">
         <Descriptions.Item label="Name">
           {`${policy_holder.first_name} ${policy_holder.last_name}`}

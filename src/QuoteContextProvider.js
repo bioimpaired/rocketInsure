@@ -1,11 +1,11 @@
-import React, { useReducer, createContext, useContext, useEffect } from "react";
+import React, { useReducer, createContext } from "react";
 const BASE_URL = "https://fed-challenge-api.sure.now.sh";
 
 // put in reducer file
 const quote = (state, action) => {
   switch (action.type) {
     case "SET_QUOTE":
-      return { ...state, quote: action.payload.quote };
+      return { ...state, quote: action.payload.quote, error: false };
     case "SET_LOADING":
       return {
         ...state,
@@ -15,10 +15,11 @@ const quote = (state, action) => {
       return {
         ...state,
         onFormPage: action.payload.onFormPage,
+        error: false,
       };
     case "SET_ERROR":
       return {
-        ...initState,
+        ...state,
         error: action.payload.error,
       };
     default:
@@ -36,12 +37,14 @@ const initState = {
 // put in own file
 const useFetch = (endpoint) => {
   const [state, dispatch] = useReducer(quote, initState);
+  console.log("usefetch state", state);
   const setQuote = (quote) =>
     dispatch({
       type: "SET_QUOTE",
       payload: quote,
     });
   const setLoading = (loading) => {
+    console.log("loing setting ", loading);
     return dispatch({
       type: "SET_LOADING",
       payload: { loading },
@@ -68,16 +71,13 @@ const useFetch = (endpoint) => {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log("got ot the then in fetchat", data);
         setQuote(data);
         nextPage();
         setLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        setError(true);
-        setLoading(false);
-      })
-      .finally(() => {
         setError(true);
         setLoading(false);
       });
@@ -102,6 +102,7 @@ const QuoteContextProvider = ({ children }) => {
         postal: state.postal,
       },
     };
+    console.log("clicking submit");
     fetchAt("/api/v1/quotes", "POST", orderedFormState);
   };
 
