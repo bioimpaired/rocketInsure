@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useReducer, useRef } from "react";
-import { Form, Input, Button, Select } from "antd";
+import React, { useReducer } from "react";
+import { Form, Input, Button, Select, Tooltip } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import "antd/dist/antd.css";
 
 const BASE_URL = "https://fed-challenge-api.sure.now.sh";
@@ -73,15 +74,7 @@ function App() {
   const { Option } = Select;
   const [state, fetchAt] = useFetch(BASE_URL);
 
-  const secFormRef = useRef(null);
-
-  function handleChange(event, sec, third) {
-    // const {
-    //   target: { name, value },
-    // } = event;
-    const deductible = secFormRef.current.getFieldValue("deductible");
-    // deductibleAmount.current.getFieldValue("deductible");
-    console.log("eve", event, sec, deductible);
+  function handleChange(val, key) {
     const putBody = {
       quote: {
         quoteId: state.quote.quoteId,
@@ -89,7 +82,7 @@ function App() {
         policy_holder: state.quote.policy_holder,
         variable_selections: {
           ...state.quote.variable_selections,
-          deductible: parseInt(deductible),
+          [key]: parseInt(val),
         },
       },
     };
@@ -130,9 +123,13 @@ function App() {
         </div>
         <div>{state.quote.variable_options.asteroid_collision.title}</div>
         <div>{state.quote.variable_options.asteroid_collision.description}</div>
-        <Form ref={secFormRef}>
-          <Form.Item label="First Name" name="first_name">
-            <Select onChange={handleChange} name="asteroid_collision">
+        <Form>
+          <Form.Item name="first_name">
+            <Select
+              onChange={(val) => handleChange(val, "asteroid_collision")}
+              name="asteroid_collision"
+              defaultValue={state.quote.variable_selections.asteroid_collision}
+            >
               {state.quote.variable_options.asteroid_collision.values.map(
                 (val, idx) => (
                   <Option key={idx} value={val}>
@@ -145,21 +142,18 @@ function App() {
 
           <div>{state.quote.variable_options.deductible.title}</div>
           <div>{state.quote.variable_options.deductible.description}</div>
-          <Form.Item label="deductible" name="deductible">
+          <Form.Item name="deductible">
             <Select
-              onChange={handleChange}
+              onChange={(val) => handleChange(val, "deductible")}
               name="deductible"
-              placeholder="sljfd"
+              defaultValue={state.quote.variable_selections.deductible}
             >
               {state.quote.variable_options.deductible.values.map(
-                (val, idx) => {
-                  // const valObj = JSON.stringify({name: "de"})
-                  return (
-                    <Option key={idx} value={val}>
-                      {val}
-                    </Option>
-                  );
-                }
+                (val, idx) => (
+                  <Option key={idx} value={val}>
+                    {val}
+                  </Option>
+                )
               )}
             </Select>
           </Form.Item>
