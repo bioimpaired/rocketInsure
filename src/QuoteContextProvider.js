@@ -37,14 +37,12 @@ const initState = {
 // put in own file
 const useFetch = (endpoint) => {
   const [state, dispatch] = useReducer(quote, initState);
-  console.log("usefetch state", state);
   const setQuote = (quote) =>
     dispatch({
       type: "SET_QUOTE",
       payload: quote,
     });
   const setLoading = (loading) => {
-    console.log("loing setting ", loading);
     return dispatch({
       type: "SET_LOADING",
       payload: { loading },
@@ -71,7 +69,6 @@ const useFetch = (endpoint) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("got ot the then in fetchat", data);
         setQuote(data);
         nextPage();
         setLoading(false);
@@ -102,7 +99,6 @@ const QuoteContextProvider = ({ children }) => {
         postal: state.postal,
       },
     };
-    console.log("clicking submit");
     fetchAt("/api/v1/quotes", "POST", orderedFormState);
   };
 
