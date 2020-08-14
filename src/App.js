@@ -1,19 +1,18 @@
 import React, { useContext } from "react";
-import { Layout } from "antd";
-
+import { Layout, Spin } from "antd";
 import "antd/dist/antd.css";
 import "./App.css";
 
 import FirstFormPage from "./FirstFormPage";
 import SecondPage from "./SecondPage";
-import { QuoteContext } from "./index";
+import { QuoteContext } from "./QuoteContextProvider";
 
 const App = () => {
   const { Header, Footer, Content } = Layout;
   const { state } = useContext(QuoteContext);
 
   if (state.loading) {
-    return <div>loading...</div>;
+    return <Spin />;
   }
 
   return (

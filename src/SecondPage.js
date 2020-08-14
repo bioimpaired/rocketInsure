@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { Form, Select } from "antd";
-import { QuoteContext } from "./index";
+import { Form, Select, Descriptions } from "antd";
+import { QuoteContext } from "./QuoteContextProvider";
 
 const SecondPage = () => {
   const { Option } = Select;
@@ -10,8 +10,11 @@ const SecondPage = () => {
   } = state;
   return (
     <Form className="formStyles">
-      <div>name</div>
-      <div>{policy_holder.first_name + " " + policy_holder.last_name}</div>
+      <Descriptions title="Adjust selection">
+        <Descriptions.Item label="Name">
+          {`${policy_holder.first_name} ${policy_holder.last_name}`}
+        </Descriptions.Item>
+      </Descriptions>
       <div>{variable_options.asteroid_collision.title}</div>
       <div>{variable_options.asteroid_collision.description}</div>
       <Form.Item name="first_name">

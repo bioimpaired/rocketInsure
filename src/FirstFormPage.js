@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import { Form, Input, Button } from "antd";
-import { QuoteContext } from "./index";
+import { QuoteContext } from "./QuoteContextProvider";
 
 const FirstFormPage = () => {
   const { onFinish, onFinishFailed } = useContext(QuoteContext);
 
   return (
     <div>
+      <span>Enter your info</span>
       <Form
         name="basic"
         initialValues={{ remember: true }}
