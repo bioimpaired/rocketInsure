@@ -1,22 +1,20 @@
 import React, { useContext } from "react";
-
 import { Form, Input, Button } from "antd";
-
-import { QuoteContext } from "./App";
+import { QuoteContext } from "./index";
 
 const FirstFormPage = () => {
   const { onFinish, onFinishFailed } = useContext(QuoteContext);
 
   return (
     <div>
-      first page
       <Form
         name="basic"
         initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
-        className="firstForm"
+        className="formStyles"
       >
+        {/* can use map to create all form items */}
         <Form.Item
           label="First Name"
           name="first_name"
@@ -85,7 +83,7 @@ const FirstFormPage = () => {
         >
           <Input />
         </Form.Item>
-
+        {/* form validations for 5 numbers */}
         <Form.Item
           label="Postal"
           name="postal"
