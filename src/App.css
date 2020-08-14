@@ -1,0 +1,18 @@
+.layout {
+  height: 100vh;
+}
+
+.header {
+  color: white;
+}
+
+.content {
+  padding: 20px;
+  text-align: center;
+}
+
+.firstForm {
+  margin: 0 auto;
+  text-align: left;
+  width: 40%;
+}

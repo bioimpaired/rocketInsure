@@ -1,8 +1,11 @@
-import React, { useReducer } from "react";
-import { Form, Input, Button, Select, Tooltip } from "antd";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import React, { useReducer, createContext, useContext } from "react";
+import { Form, Input, Button, Select, Layout } from "antd";
 import "antd/dist/antd.css";
+import "./App.css";
+import FirstFormPage from "./FirstFormPage";
+import SecondPage from "./SecondPage";
 
+const { Header, Footer, Content } = Layout;
 const BASE_URL = "https://fed-challenge-api.sure.now.sh";
 
 const quote = (state, action) => {
@@ -67,27 +70,14 @@ const useFetch = (endpoint) => {
       });
   };
 
-  return [state, fetchAt];
+  return [fetchAt];
 };
 
-function App() {
-  const { Option } = Select;
-  const [state, fetchAt] = useFetch(BASE_URL);
+export const QuoteContext = createContext();
 
-  function handleChange(val, key) {
-    const putBody = {
-      quote: {
-        quoteId: state.quote.quoteId,
-        rating_address: state.quote.rating_address,
-        policy_holder: state.quote.policy_holder,
-        variable_selections: {
-          ...state.quote.variable_selections,
-          [key]: parseInt(val),
-        },
-      },
-    };
-    fetchAt(`/api/v1/quotes/${state.quote.quoteId}`, "PUT", putBody);
-  }
+const QuoteContextProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(quote, initState);
+  const [fetchAt] = useFetch(BASE_URL);
 
   const onFinish = (state) => {
     const orderedFormState = {
@@ -108,159 +98,48 @@ function App() {
     console.log("Failed:", errorInfo);
   };
 
-  if (state.loading) {
-    return <div>loading..</div>;
+  function handleChange(val, key) {
+    const putBody = {
+      quote: {
+        quoteId: state.quote.quoteId,
+        rating_address: state.quote.rating_address,
+        policy_holder: state.quote.policy_holder,
+        variable_selections: {
+          ...state.quote.variable_selections,
+          [key]: parseInt(val),
+        },
+      },
+    };
+    fetchAt(`/api/v1/quotes/${state.quote.quoteId}`, "PUT", putBody);
   }
 
-  if (!state.onFormPage) {
-    return (
-      <div>
-        <div>name</div>
-        <div>
-          {state.quote.policy_holder.first_name +
-            " " +
-            state.quote.policy_holder.last_name}
-        </div>
-        <div>{state.quote.variable_options.asteroid_collision.title}</div>
-        <div>{state.quote.variable_options.asteroid_collision.description}</div>
-        <Form>
-          <Form.Item name="first_name">
-            <Select
-              onChange={(val) => handleChange(val, "asteroid_collision")}
-              name="asteroid_collision"
-              defaultValue={state.quote.variable_selections.asteroid_collision}
-            >
-              {state.quote.variable_options.asteroid_collision.values.map(
-                (val, idx) => (
-                  <Option key={idx} value={val}>
-                    {val}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Form.Item>
+  const value = { state, onFinish, onFinishFailed, handleChange };
 
-          <div>{state.quote.variable_options.deductible.title}</div>
-          <div>{state.quote.variable_options.deductible.description}</div>
-          <Form.Item name="deductible">
-            <Select
-              onChange={(val) => handleChange(val, "deductible")}
-              name="deductible"
-              defaultValue={state.quote.variable_selections.deductible}
-            >
-              {state.quote.variable_options.deductible.values.map(
-                (val, idx) => (
-                  <Option key={idx} value={val}>
-                    {val}
-                  </Option>
-                )
-              )}
-            </Select>
-          </Form.Item>
-        </Form>
-
-        <div>premium</div>
-        <div>{state.quote.premium}</div>
-      </div>
-    );
-  }
   return (
-    <div className="App">
-      <Form
-        name="basic"
-        initialValues={{ remember: true }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-      >
-        <Form.Item
-          label="First Name"
-          name="first_name"
-          rules={[
-            {
-              required: true,
-              message: "Please input your first name!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
+    <QuoteContext.Provider value={value}>{children}</QuoteContext.Provider>
+  );
+};
 
-        <Form.Item
-          label="Last Name"
-          name="last_name"
-          rules={[
-            {
-              required: true,
-              message: "Please input your last name!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
+function App() {
+  const { Option } = Select;
+  // const [state, fetchAt] = useFetch(BASE_URL);
+  const { state } = useContext(QuoteContext);
 
-        <Form.Item
-          label="Address line 1"
-          name="line_1"
-          rules={[
-            {
-              required: true,
-              message: "Please input your address!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
+  if (state.loading) {
+    return <div>loading...</div>;
+  }
 
-        <Form.Item label="Line 2" name="line_2" rules={[]}>
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="City"
-          name="city"
-          rules={[
-            {
-              required: true,
-              message: "Please input your city!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="Region"
-          name="region"
-          rules={[
-            {
-              required: true,
-              message: "Please input your region!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="Postal"
-          name="postal"
-          rules={[
-            {
-              required: true,
-              message: "Please input your postal!",
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    </div>
+  return (
+    <Layout className="layout">
+      <Header className="header">Rocket Insurance</Header>
+      <Content className="content">
+        <QuoteContextProvider>
+          {/* acts like router */}
+          {state.onFormPage ? <FirstFormPage /> : <SecondPage />}
+        </QuoteContextProvider>
+      </Content>
+      <Footer>Rocket.co</Footer>
+    </Layout>
   );
 }
 
